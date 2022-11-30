@@ -2,107 +2,123 @@
 
 import time
 import pigpio
+from commands_keyboard import arrows
 
 
 class ESC:
     """
-    Turnigy Electonic Speed controller.
+    .
     Tested with:
-      Plush 30 A
+    - Turnigy Electonic Speed controller Plush 30 A (min_width,max_width)=(650,2500)
+    - 
     """
-    ## YMMV
-    MIN_WIDTH = 1000
 
     # Note that some batteries, 12 volt PSUs, etc. might only be capable of far less than this (e.g. 1350)
     # However, the controllers range should still be set to max for finest full-scale resolution.
-    MAX_WIDTH = 2000
 
-    def __init__(self, pin):
-        self.conn = pigpio.pi()
+    def __init__(self, pin, min_width = 1000, max_width = 2000):
+        self.connexion = pigpio.pi()
         self.pin = pin
+        self.min_width = min_width
+        self.max_width = max_width
+        init_speed = (self.min_width + self.max_width)//2
+        self.connexion.set_servo_pulsewidth(self.pin, init_speed)
 
-    def pwm(self, width: int, snooze: int = 0) -> None:
+
+    def start(self, init_speed = 1500):
+        step = 20
+        delay_btwn_changes = 0.1 # seconds
+        for speed in range(self.min_width, init_speed, step):
+            self.set_speed(speed, delay_btwn_changes)
+
+    def set_speed(self, speed, snooze: int = 0):
         """
         Convenience wrapper around pigpio's set_servo_pulsewidth.
         width: The servo pulsewidth in microseconds. 0 switches pulses off.
         snooze: seconds before returning.
         """
-        print("Setting pulse width to", width, "microseconds for", snooze, "seconds.")
-        self.conn.set_servo_pulsewidth(self.pin, width)
+        # values must be between 500 and 2500 for set_servo_pulsewidth
+        # print("pulse width to", speed, "µseconds for", snooze, "seconds.")
+        self.connexion.set_servo_pulsewidth(self.pin, speed)
         if snooze:
             time.sleep(snooze)
-        return
+        return speed
 
-    def calibrate(self) -> None:
+    def stop(self):
+        self.connexion.set_servo_pulsewidth(self.pin, 0)
+
+    def calibrate(self):
         """
         This trains the ESC on the full scale (max - min range) of the controller / pulse generator.
         This only needs to be done when changing controllers, transmitters, etc. not upon every power-on.
         NB: if already calibrated, full throttle will be applied (briefly)!  Disconnect propellers, etc.
         """
         print("Calibrating...")
-        self.pwm(width=self.MAX_WIDTH)
-        input("Connect power and press Enter to calibrate...")
-        self.pwm(width=self.MAX_WIDTH, snooze=2)   # Official docs: "about 2 seconds".
-        self.pwm(width=self.MIN_WIDTH, snooze=4)   # Time enough for the cell count, etc. beeps to play.
+        self.set_speed(self.max_width)
+        input("Connect power and press Enter to calibrate...") 
+        self.set_speed(self.max_width, 2) # Official docs: "about 2 seconds".  
+        self.set_speed(self.min_width, 4)# Time enough for the cell count, etc. beeps to play.
         print("Finished calibration.")
 
-    def arm(self) -> None:
-        """
-        Arms the ESC. Required upon every power cycle.
-        """
-        print("Arming...")
-        self.pwm(width=self.MIN_WIDTH, snooze=4)  # Time enough for the cell count, etc. beeps to play.
-        print("Armed...")
+    # arms the ESC. Required upon every power cycle.
+    def arm(self):
+        
+        print("Arming...", end='')
+        self.set_speed(speed=self.min_width, snooze=4)  # Time enough for the cell count, etc. beeps to play.
+        print("Done.")
 
-    def halt(self) -> None:
-        """
-        Switch of the GPIO, and un-arm the ESC.
-        Ensure this runs, even on unclean shutdown.
-        """
-        print("Slowing...")
-        self.pwm(width=self.MIN_WIDTH, snooze=1)   # This 1 sec seems to *hasten* shutdown.
-        print("Failsafe...")
-        self.pwm(0)
-        print("Disabling GPIO.")
-        self.conn.stop()
-        print("Halted.")
 
-    def test(self) -> None:
-        """
-        Test with a triangularish wave.
-        Useful for determining the max and min PWM values.
-        """
-        max_width = self.MAX_WIDTH  # microseconds
-        min_width = self.MIN_WIDTH  # microseconds
-        step = 9  # microseconds
+    # switch off the GPIO, and un-arm the ESC.
+    # ensure this runs, even on unclean shutdown.
+    def quit(self):
+        self.set_speed(0)
+        self.connexion.stop()
+        print("ESC Stopped.")
 
-        snooze = 0.1 # seconds
+    # test with a triangularish wave.
+    def test(self): 
+
+        # change those values to determine min and max of your ESC
+        max_width = self.max_width  # microseconds
+        min_width = self.min_width  # microseconds
+        step = 200  # microseconds
+
+        delay_btwn_changes = 0.5 # seconds
 
         input("Press Enter to conduct run-up test...")
-        for i in range(1):
-            print("Increasing...")
-            for width in range(min_width, max_width, step):
-                self.pwm(width=width, snooze=snooze)
+        print("Increasing...")
+        for width in range(self.min_width, self.max_width, step):
+            self.set_speed(width, delay_btwn_changes)
 
-        time.sleep(1)  # Duration test.  Seems to last almost 60s @ 1350.
+        print("Holding 1 sec at max...")
+        time.sleep(1)  # Duration test
 
-        print("Holding at max...")
-        snooze = 0.3
         print("Decreasing...")
-        for width in range(max_width, min_width, -step):
-            self.pwm(width=width, snooze=snooze)
-
-
+        for width in range(self.max_width, self.min_width, -step):
+            self.set_speed(width, delay_btwn_changes)
+            print("speed :", width)
 
 
 if __name__ == "__main__":
 
-    esc = ESC(pin=4)
+    min_width = 1000
+    max_width = 2000
+    esc = ESC(pin=4, min_width=min_width, max_width=max_width)
+
+    init_speed = 1500
+    speed_step = 20
+    commands = arrows(value=init_speed, step=speed_step, min=min_width, max=max_width)
+    commands.start_listening()
+    esc.arm()         # Required upon every power-up
+    esc.start(init_speed)
     try:
-        #esc.calibrate()  # Recommended when changing "transmitter" or controller.
-        esc.arm()         # Required upon every power-up.
-        esc.test()        # Run-up test.
+        # esc.calibrate()  # Recommended when changing "transmitter" or controller
+        # esc.arm()         # Required upon every power-up
+        # esc.test()        # Run-up test
+        while True:
+            esc.set_speed(commands.value)
     except KeyboardInterrupt:
         pass
     finally:
-        esc.halt()
+        commands.stop_listening()
+        esc.quit()
