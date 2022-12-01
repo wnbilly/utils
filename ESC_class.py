@@ -25,8 +25,13 @@ class ESC:
         self.connexion.set_servo_pulsewidth(self.pin, init_speed)
 
 
+<<<<<<< HEAD
+    def start(self, init_speed = 1200):
+        step = 10
+=======
     def start(self, init_speed = 1500):
         step = 20
+>>>>>>> 68e539804e1f6ff9bf17204d7c5883e664f9af30
         delay_btwn_changes = 0.1 # seconds
         for speed in range(self.min_width, init_speed, step):
             self.set_speed(speed, delay_btwn_changes)
@@ -89,10 +94,17 @@ class ESC:
         print("Increasing...")
         for width in range(self.min_width, self.max_width, step):
             self.set_speed(width, delay_btwn_changes)
+<<<<<<< HEAD
 
         print("Holding 1 sec at max...")
         time.sleep(1)  # Duration test
 
+=======
+
+        print("Holding 1 sec at max...")
+        time.sleep(1)  # Duration test
+
+>>>>>>> 68e539804e1f6ff9bf17204d7c5883e664f9af30
         print("Decreasing...")
         for width in range(self.max_width, self.min_width, -step):
             self.set_speed(width, delay_btwn_changes)
@@ -104,21 +116,44 @@ if __name__ == "__main__":
     min_width = 1000
     max_width = 2000
     esc = ESC(pin=4, min_width=min_width, max_width=max_width)
+<<<<<<< HEAD
+    esc2 = ESC(pin=17, min_width=min_width, max_width=max_width)
+
+    init_speed = 1100
+=======
 
     init_speed = 1500
+>>>>>>> 68e539804e1f6ff9bf17204d7c5883e664f9af30
     speed_step = 20
     commands = arrows(value=init_speed, step=speed_step, min=min_width, max=max_width)
     commands.start_listening()
     esc.arm()         # Required upon every power-up
+<<<<<<< HEAD
+    esc2.arm()
     esc.start(init_speed)
+    esc2.start(init_speed)
+=======
+    esc.start(init_speed)
+>>>>>>> 68e539804e1f6ff9bf17204d7c5883e664f9af30
     try:
         # esc.calibrate()  # Recommended when changing "transmitter" or controller
         # esc.arm()         # Required upon every power-up
         # esc.test()        # Run-up test
         while True:
+<<<<<<< HEAD
+            print((commands.value-min_width)/(max_width-min_width)*100)
             esc.set_speed(commands.value)
+            esc2.set_speed(commands.value)
+=======
+            esc.set_speed(commands.value)
+>>>>>>> 68e539804e1f6ff9bf17204d7c5883e664f9af30
     except KeyboardInterrupt:
         pass
     finally:
         commands.stop_listening()
+<<<<<<< HEAD
         esc.quit()
+        esc2.quit()
+=======
+        esc.quit()
+>>>>>>> 68e539804e1f6ff9bf17204d7c5883e664f9af30
