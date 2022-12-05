@@ -17,17 +17,17 @@ class ESC:
     # However, the controllers range should still be set to max for finest full-scale resolution.
 
     def __init__(self, pin, min_width = 1000, max_width = 2000):
-        self.connexion = pigpio.pi()
-        self.pin = pin
-        self.min_width = min_width
-        self.max_width = max_width
-        init_speed = (self.min_width + self.max_width)//2
-        self.connexion.set_servo_pulsewidth(self.pin, init_speed)
+        self.connexion = pigpio.pi() # initialise pigpio instance
+        self.pin = pin # GPIO pin to which the ESC is connected
+        self.min_width = min_width # max width of the PWM (depends on the ESC or motor)
+        self.max_width = max_width # min width of the PWM (depends on the ESC or motor)
+        self.speed = (self.min_width + self.max_width)//2 # initial speed set to the middle between min and max
+        self.connexion.set_servo_pulsewidth(self.pin, self.speed) # initialise PWM connexion and set the speed to self.speed
 
 
     def start(self, init_speed = 1200):
-        step = 10
-        delay_btwn_changes = 0.1 # seconds
+        step = 10 # size of steps from min_width to init_speed, lower to have a smoother start
+        delay_btwn_changes = 0.1 # seconds  delay to hold each stop, increase to have more gentle start
         for speed in range(self.min_width, init_speed, step):
             self.set_speed(speed, delay_btwn_changes)
 
@@ -40,12 +40,22 @@ class ESC:
         # values must be between 500 and 2500 for set_servo_pulsewidth
         # print("pulse width to", speed, "µseconds for", snooze, "seconds.")
         self.connexion.set_servo_pulsewidth(self.pin, speed)
+        self.speed = speed
         if snooze:
             time.sleep(snooze)
         return speed
 
     def stop(self):
         self.connexion.set_servo_pulsewidth(self.pin, 0)
+
+    # TO DO : CONTINUOUSLY UPDATE self.speed UNTIL stop_kb_commands called
+    def start_kb_commands(self, speed_step=20):
+        # value is the value to start
+        self.commands = arrows(value=self.speed, step=speed_step, min=self.min_width, max=self.max_width)
+        self.commands.start_listening()
+
+    def stop_kb_commands(self):
+        if self.commands : self.commands.stop_listening()
 
     def calibrate(self):
         """
@@ -77,18 +87,15 @@ class ESC:
 
     # test with a triangularish wave.
     def test(self): 
-
-        # change those values to determine min and max of your ESC
-        max_width = self.max_width  # microseconds
-        min_width = self.min_width  # microseconds
         step = 200  # microseconds
-
         delay_btwn_changes = 0.5 # seconds
 
         input("Press Enter to conduct run-up test...")
         print("Increasing...")
+        
         for width in range(self.min_width, self.max_width, step):
             self.set_speed(width, delay_btwn_changes)
+            print("speed :", width)
 
         print("Holding 1 sec at max...")
         time.sleep(1)  # Duration test
@@ -106,8 +113,8 @@ if __name__ == "__main__":
     esc = ESC(pin=4, min_width=min_width, max_width=max_width)
     esc2 = ESC(pin=17, min_width=min_width, max_width=max_width)
 
-    init_speed = 1100
     speed_step = 20
+    init_speed = 1100
     commands = arrows(value=init_speed, step=speed_step, min=min_width, max=max_width)
     commands.start_listening()
     esc.arm()         # Required upon every power-up
