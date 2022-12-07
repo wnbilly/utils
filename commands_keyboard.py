@@ -31,10 +31,6 @@ class arrows:
 
         if key in self.KEYS_STOP:
             self.value = 0
-<<<<<<< HEAD
-=======
-        print(self.value)
->>>>>>> 68e539804e1f6ff9bf17204d7c5883e664f9af30
 
 
     def on_release(self, key):
