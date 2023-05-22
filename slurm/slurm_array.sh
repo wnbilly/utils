@@ -9,14 +9,23 @@
 #SBATCH --cpus-per-task=8          # number of CPU per task
 #SBATCH --array=1-4%4          # array=<start>-<end>[:<step>][%<maxParallel>] end included --> https://slurm.schedmd.com/job_array.html
 
+# Activate echo of commands
+set -x
 
-# activate bash and virtual environment
+# Activate bash and virtual environment
 eval "bash"
 eval "$(conda shell.bash hook)"
-conda activate datum
+conda activate virtual_env_name # replace with your virtual environment name
+
+# Create logs directory if it doesn't exist as following :
+# slurm_scripts
+# ├── logs
+# │     ├── job1.out
+# │     ├── job2.out
+# │     └── ....
+mkdir -p ./logs
 
 # Specify the path to the config file supposing the following structure :
-
 # slurm_scripts
 # ├── logs
 # │     ├── job1.out
@@ -30,8 +39,8 @@ config="./configs/config.txt"
 # Acquire the parameters line from the config file
 param=$(sed -n ${SLURM_ARRAY_TASK_ID}p  $config )
 
-cd ..
+# cd
+# commands ...
 
-set -x # echo on
-srun python3 -u convert_dreambooth.py --filepath $NAME_OF_EXPERIMENT --ckpt $i
-
+# Launch python scripts with -u for unbuffered stdin, stdout, stderr
+srun python3 -u script.py $param

@@ -8,6 +8,9 @@
 #SBATCH --gpus=1                   # number of GPU
 #SBATCH --cpus-per-task=8          # number of CPU per task
 
+# Activate echo of commands
+set -x
+
 # Create logs directory if it doesn't exist as following :
 # slurm_scripts
 # ├── logs
@@ -16,16 +19,13 @@
 # │     └── ....
 mkdir -p ./logs
 
-# Necessary to activate conda environment
-bash
+# Activate bash and virtual environment
+eval "bash"
 eval "$(conda shell.bash hook)"
-conda activate datum
+conda activate virtual_env_name # replace with your virtual environment name
 
 # cd
-# export
-
-# Activate echo of commands
-set -x
+# commands ...
 
 # Launch python scripts with -u for unbuffered stdin, stdout, stderr
 srun python3 -u script.py --arg1 arg1 --arg2 arg2
