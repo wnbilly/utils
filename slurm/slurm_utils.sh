@@ -62,8 +62,10 @@ alias squ="squeue -u $USER -i 3"
 function stail() {
   if [[ -z $1 ]]; then
     latest_file=$(ls -t logs/job*.out | head -n 1)
+    echo -e "${YELLOW}---$latest_file---${NC}"
     tail -f "$latest_file"
   else
+    echo -e "${YELLOW}---logs/job$1.out---${NC}"
     tail -f "logs/job$1.out" # Requires format jobXXX.out
   fi
 }

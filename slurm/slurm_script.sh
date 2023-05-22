@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#SBATCH --output=logs/job%j.out   # fichier de sortie
-#SBATCH --error=logs/job%j.out    # fichier d'erreur
-#SBATCH --time=20:00:00            # temps maximal d'allocation
-#SBATCH --partition=A40		   # type de partition
-#SBATCH --nodes=1                  # nombre de noeuds
-#SBATCH --gpus=2                   # nombre de GPU
-#SBATCH --cpus-per-task=8          # nombre de CPU par tâche
+#SBATCH --output=logs/job%j.out   # .out file %j : jobid
+#SBATCH --error=logs/job%j.out    # error file set to the same as .out file
+#SBATCH --time=20:00:00            # max time allocated
+#SBATCH --partition=P100		   # partition type
+#SBATCH --nodes=1                  # number of nodes
+#SBATCH --gpus=1                   # number of GPU
+#SBATCH --cpus-per-task=8          # number of CPU per task
 
 # Create logs directory if it doesn't exist as following :
 # slurm_scripts
