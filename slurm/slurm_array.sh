@@ -9,13 +9,9 @@
 #SBATCH --cpus-per-task=8          # number of CPU per task
 #SBATCH --array=1-4%4          # array=<start>-<end>[:<step>][%<maxParallel>] end included --> https://slurm.schedmd.com/job_array.html
 
-# Activate echo of commands
-set -x
-
-# Activate bash and virtual environment
-eval "bash"
-eval "$(conda shell.bash hook)"
-conda activate virtual_env_name # replace with your virtual environment name
+# Params and setup
+virtual_env_name="datum"
+start_time=$SECONDS
 
 # Create logs directory if it doesn't exist as following :
 # slurm_scripts
@@ -24,6 +20,11 @@ conda activate virtual_env_name # replace with your virtual environment name
 # │     ├── job2.out
 # │     └── ....
 mkdir -p ./logs
+
+# Activate bash and virtual environment
+eval "bash"
+eval "$(conda shell.bash hook)"
+conda activate $virtual_env_name # replace with your virtual environment name
 
 # Specify the path to the config file supposing the following structure :
 # slurm_scripts
@@ -39,8 +40,17 @@ config="./configs/config.txt"
 # Acquire the parameters line from the config file
 param=$(sed -n ${SLURM_ARRAY_TASK_ID}p  $config )
 
+# Activate echo of commands
+set -x
+
 # cd
 # commands ...
 
 # Launch python scripts with -u for unbuffered stdin, stdout, stderr
 srun python3 -u script.py $param
+
+# Calculate and display execution time
+end_time=$((SECONDS - start_time))
+minutes=$((end_time / 60))
+seconds=$((end_time % 60))
+echo "Execution time: $minutes minutes $seconds seconds"

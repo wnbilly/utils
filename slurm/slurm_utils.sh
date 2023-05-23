@@ -1,6 +1,6 @@
 # Slurm utils
-# Requires slurm scripts to be in a slurm_scripts folder like following :
 
+# Requires slurm scripts to be in a slurm_scripts folder like following :
 # slurm_scripts
 # ├── logs
 # │     ├── job1.out
@@ -34,7 +34,7 @@ function showout() {
     cat "logs/job$1.out" # Requires format jobXXX.out
     echo -e "${YELLOW}---job$1.out---${NC}"
   else
-    echo "Invalid input. Please enter an integer or leave it blank."
+    echo "Please provide a job id."
   fi
 }
 
@@ -50,7 +50,7 @@ function ssj() {
     scontrol show job "$LATEST_JOB"
     echo -e "${YELLOW}---job $LATEST_JOB---${NC}"
   else
-    echo "Please provide job id as LATEST_JOB is null."
+    echo "Please provide a job id as LATEST_JOB is null."
   fi
 }
 
@@ -69,3 +69,5 @@ function stail() {
     tail -f "logs/job$1.out" # Requires format jobXXX.out
   fi
 }
+
+# Disclaimer : I chose to use the latest file for stail and showout but LATEST_JOb could be used as well like in ssj
