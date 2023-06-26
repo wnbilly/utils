@@ -11,15 +11,6 @@
 
 # Params and setup
 virtual_env_name="datum"
-start_time=$SECONDS
-
-# Create logs directory if it doesn't exist as following :
-# slurm_scripts
-# ├── logs
-# │     ├── job1.out
-# │     ├── job2.out
-# │     └── ....
-mkdir -p ./logs
 
 # Activate bash and virtual environment
 eval "bash"
@@ -50,7 +41,8 @@ set -x
 srun python3 -u script.py $param
 
 # Calculate and display execution time
-end_time=$((SECONDS - start_time))
-minutes=$((end_time / 60))
-seconds=$((end_time % 60))
-echo "Execution time: $minutes minutes $seconds seconds"
+set +x
+hours=$(date -u -d @${SECONDS} +%H)
+minutes=$(date -u -d @${SECONDS} +%M)
+seconds=$(date -u -d @${SECONDS} +%S)
+echo "Execution time: $hours hours $minutes minutes $seconds seconds"

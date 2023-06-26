@@ -21,20 +21,18 @@ function run_sbatch() {
 
 # alias sbatch="run_sbatch" # May cause issues with sbatch command
 
-# showout to show .out of your last job
-# It is supposed to be launched from slurm_scripts
-function showout() {
+# sout to show .out of your last job
+# It is supposed to be launched from slurm_scripts. I kept sout as tail only shows the last 10 lines by default
+function sout() {
   if [[ -z $1 ]]; then
-    latest_file=$(ls -t logs/*.out | head -n 1)
+    latest_file=$(ls -t logs/job*.out | head -n 1)
     echo -e "${YELLOW}---$latest_file---${NC}"
     cat "$latest_file"
-    echo -e "${YELLOW}---$latest_file---${NC}"
-  elif [[ $1 =~ ^[0-9]+$ ]]; then
-    echo -e "${YELLOW}---job$1.out---${NC}"
-    cat "logs/job$1.out" # Requires format jobXXX.out
-    echo -e "${YELLOW}---job$1.out---${NC}"
+    echo -e "${YELLOW}---logs/job$1.out---${NC}"
   else
-    echo "Please provide a job id."
+    echo -e "${YELLOW}---logs/job$1.out---${NC}"
+    cat "logs/job$1.out" # Requires format jobXXX.out
+    echo -e "${YELLOW}---logs/job$1.out---${NC}"
   fi
 }
 
@@ -63,11 +61,11 @@ function stail() {
   if [[ -z $1 ]]; then
     latest_file=$(ls -t logs/job*.out | head -n 1)
     echo -e "${YELLOW}---$latest_file---${NC}"
-    tail -f "$latest_file"
+    tail -f -n 25 "$latest_file"
   else
     echo -e "${YELLOW}---logs/job$1.out---${NC}"
-    tail -f "logs/job$1.out" # Requires format jobXXX.out
+    tail -f -n 25 "logs/job$1.out" # Requires format jobXXX.out
   fi
 }
 
-# Disclaimer : I chose to use the latest file for stail and showout but LATEST_JOb could be used as well like in ssj
+# Disclaimer : I chose to use the latest file for stail and showout but LATEST_JOB could be used as well like in ssj

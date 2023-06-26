@@ -10,20 +10,18 @@
 
 # Params and setup
 virtual_env_name="datum"
-start_time=$SECONDS
-
-# Create logs directory if it doesn't exist as following :
-# slurm_scripts
-# ├── logs
-# │     ├── job1.out
-# │     ├── job2.out
-# │     └── ....
-mkdir -p ./logs
 
 # Activate bash and virtual environment
 eval "bash"
 eval "$(conda shell.bash hook)"
 conda activate $virtual_env_name # replace with your virtual environment name
+
+# Architecture of the slurm related files
+# slurm_scripts
+# ├── logs
+# │     ├── job1.out
+# │     ├── job2.out
+# │     └── ....
 
 # Activate echo of commands
 set -x
@@ -35,7 +33,8 @@ set -x
 srun python3 -u script.py --arg1 arg1 --arg2 arg2
 
 # Calculate and display execution time
-end_time=$((SECONDS - start_time))
-minutes=$((end_time / 60))
-seconds=$((end_time % 60))
-echo "Execution time: $minutes minutes $seconds seconds"
+set +x
+hours=$(date -u -d @${SECONDS} +%H)
+minutes=$(date -u -d @${SECONDS} +%M)
+seconds=$(date -u -d @${SECONDS} +%S)
+echo "Execution time: $hours hours $minutes minutes $seconds seconds"
