@@ -1,6 +1,6 @@
 # Utils
 
-This repository is meant to host and share somme tools that I coded.
+This repository is meant to host and share some tools that I coded.
 
 There are 2 folders :
 - ### Slurm
